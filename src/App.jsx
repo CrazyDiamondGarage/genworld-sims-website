@@ -1,35 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
+  //! play game
+  const playGame = () => {
+    //* Play Game!!
+    console.debug("Play Game");
+    const elem = document.getElementById("godot-game");
+    if (elem) {
+      elem.contentWindow.startGame();
+    } else {
+      console.debug("Cannot find game :-(");
+    }
+  };
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+          <img src="/img/godot.png" className="logo" alt="Vite logo" />
         </a>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>GenWorld</h1>
+      <button onClick={playGame}>Start Game</button>
+      <iframe
+        id="godot-game"
+        className={`game-iframe`}
+        title="GenWorld"
+        src="/hacker-gpt-website/game/game.html"
+      />
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
