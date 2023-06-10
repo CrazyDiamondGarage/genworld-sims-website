@@ -25,7 +25,7 @@ const App = () => {
         id="godot-game"
         className={`game-iframe`}
         title="GenWorld"
-        src="/hacker-gpt-website/game/game.html"
+        src="/game/game.html"
       />
     </>
   );
