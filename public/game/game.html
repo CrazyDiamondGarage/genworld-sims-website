@@ -125,6 +125,7 @@
         visibility: visible;
       }
     </style>
+    
   </head>
   <body>
     <canvas id="canvas">
@@ -148,17 +149,9 @@
       <div id="status-notice" class="godot" style="display: none"></div>
     </div>
 
-    <script src="game.js"></script>
+    <script src="coi-serviceworker.min.js"></script><script src="game.js"></script>
     <script>
-      const GODOT_CONFIG = {
-        args: [],
-        canvasResizePolicy: 2,
-        executable: "game",
-        experimentalVK: false,
-        fileSizes: { "game.pck": 7785280, "game.wasm": 2564551 },
-        focusCanvas: true,
-        gdextensionLibs: [],
-      };
+      const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"game","experimentalVK":false,"fileSizes":{"game.pck":7786592,"game.wasm":2564551},"focusCanvas":true,"gdextensionLibs":[]};
       const engine = new Engine(GODOT_CONFIG);
 
       window.startGame = () => {
@@ -172,13 +165,13 @@
         let statusMode = "hidden";
 
         let animationCallbacks = [];
-        function animate(time) {
+        const animate = (time) => {
           animationCallbacks.forEach((callback) => callback(time));
           requestAnimationFrame(animate);
-        }
+        };
         requestAnimationFrame(animate);
 
-        function animateStatusIndeterminate(ms) {
+        const animateStatusIndeterminate = (ms) => {
           const i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
           if (statusIndeterminate.children[i].style.borderTopColor === "") {
             Array.prototype.slice.call(statusIndeterminate.children).forEach((child) => {
@@ -186,16 +179,16 @@
             });
             statusIndeterminate.children[i].style.borderTopColor = "#dfdfdf";
           }
-        }
+        };
 
-        function setStatusMode(mode) {
+        const setStatusMode = (mode) => {
           if (statusMode === mode || !initializing) {
             return;
           }
           [statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
             elem.style.display = "none";
           });
-          animationCallbacks = animationCallbacks.filter(function (value) {
+          animationCallbacks = animationCallbacks.filter((value) => {
             return value !== animateStatusIndeterminate;
           });
           switch (mode) {
@@ -215,9 +208,9 @@
               throw new Error("Invalid status mode");
           }
           statusMode = mode;
-        }
+        };
 
-        function setStatusNotice(text) {
+        const setStatusNotice = (text) => {
           while (statusNotice.lastChild) {
             statusNotice.removeChild(statusNotice.lastChild);
           }
@@ -226,15 +219,15 @@
             statusNotice.appendChild(document.createTextNode(line));
             statusNotice.appendChild(document.createElement("br"));
           });
-        }
+        };
 
-        function displayFailureNotice(err) {
+        const displayFailureNotice = (err) => {
           const msg = err.message || err;
           console.error(msg);
           setStatusNotice(msg);
           setStatusMode("notice");
           initializing = false;
-        }
+        };
 
         const missing = Engine.getMissingFeatures();
         if (missing.length !== 0) {
@@ -244,7 +237,7 @@
           setStatusMode("indeterminate");
           engine
             .startGame({
-              onProgress: function (current, total) {
+              onProgress: (current, total) => {
                 if (total > 0) {
                   statusProgressInner.style.width = `${(current / total) * 100}%`;
                   setStatusMode("progress");
@@ -268,3 +261,4 @@
     </script>
   </body>
 </html>
+
