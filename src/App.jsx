@@ -31,6 +31,20 @@ const App = () => {
       <br />
       <iframe id="godot-game" className={`game-iframe`} title="GenWorld" src="/game/game.html" />
 
+      <div>
+        <h2>Hachathon Team</h2>
+        <p>Frank Chen - Team Lead</p>
+        <p>Todd Zhang - Game Dev</p>
+        <p>Chang - Backend Dev</p>
+        <p>Yewlne Lin - PM</p>
+        <p>Aero Xi - AI Engr</p>
+        <p>Shuju Chen - Prompt Engr</p>
+        <h2>Credits</h2>
+        <p>
+          <a href="https://limezu.itch.io/">LimeZu</a> - Pixel Arts
+        </p>
+      </div>
+
       <div id="gw-footer">
         <h4 id="gw-copyright">Copyright © 2023 MetaBorn. All rights reserved.</h4>
 
