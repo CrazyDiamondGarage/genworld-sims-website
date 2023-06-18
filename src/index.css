@@ -88,6 +88,18 @@ button:focus-visible {
   bottom: 0;
 }
 
+#gw-btn-coke {
+  position: absolute;
+  right: 20vw;
+  bottom: 0;
+}
+
+#gw-btn-axe {
+  position: absolute;
+  right: 20vw;
+  bottom: 60px;
+}
+
 #godot-game {
   max-width: 640px;
   max-height: 480px;
@@ -127,6 +139,43 @@ button:focus-visible {
   margin-bottom: -4px !important;
   margin-left: 10px !important;
   margin-right: 10px !important;
+}
+
+.gw-hide {
+  display: none;
+}
+
+.gw-popup {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.gw-popup-inner {
+  width: 400px;
+  height: 240px;
+  display: inline-block;
+  margin: auto;
+  margin-top: calc(45vh - 120px);
+  background-color: black;
+  border: 4px solid white;
+}
+
+.gw-popup-inner span {
+  color: greenyellow;
+}
+
+.gw-popup-inner img {
+  display: block;
+  margin: 0 auto 20px auto;
+  height: 60px;
+}
+
+.gw-popup-inner button {
+  margin: 0 10px;
 }
 
 @media (prefers-color-scheme: light) {

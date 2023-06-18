@@ -1,8 +1,35 @@
 import React, { useState } from "react";
 import "./App.css";
 
+const Popup = (props) => {
+  const onCancel = () => {
+    props.setPopup(false);
+  };
+
+  const onConfirm = () => {
+    props.setPopup(false);
+  };
+
+  return (
+    <div className="gw-popup">
+      <div className="gw-popup-inner">
+        <h3>
+          Confirm to airdrop <span>{props.item}</span> to <span>{props.npc}</span>?
+        </h3>
+        <img src={props.itemImg} alt={props.item} />
+        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onConfirm}>Confirm</button>
+      </div>
+    </div>
+  );
+};
+
 const App = () => {
   const [playing, setPlaying] = useState(false);
+  const [item, setItem] = useState("a bottle of Coke");
+  const [itemImg, setItemImg] = useState("/img/coke.png");
+  const [npc, setNpc] = useState("Mohan Guo");
+  const [popup, setPopup] = useState(false);
 
   //! play game
   const playGame = () => {
@@ -16,14 +43,35 @@ const App = () => {
       console.debug("Cannot find game :-(");
     }
   };
+
+  const codePlus = () => {
+    setItem("a bottle of Coke");
+    setNpc("Mohan Guo");
+    setItemImg("/img/coke.png");
+    setPopup(true);
+  };
+
+  const axePlus = () => {
+    setItem("a shape Axe");
+    setNpc("Musk Wang");
+    setItemImg("/img/axe.png");
+    setPopup(true);
+  };
+
   return (
     <>
       <div id="gw-top">
         <div id="gw-logo">
           <img src="/img/genworld.png" className="logo" alt="GenWorld" />
         </div>
-        <button id="gw-btn-start-game" onClick={playGame} disabled={playing}>
+        <button id="gw-btn-start-game" className={playing ? "gw-hide" : ""} onClick={playGame} disabled={playing}>
           RUN
+        </button>
+        <button id="gw-btn-coke" className={playing ? "" : "gw-hide"} onClick={codePlus}>
+          COKE +1
+        </button>
+        <button id="gw-btn-axe" className={playing ? "" : "gw-hide"} onClick={axePlus}>
+          AXE +1
         </button>
       </div>
 
@@ -60,6 +108,7 @@ const App = () => {
           Made by <a href="https://https://godotengine.org/">Godot Engine</a>.
         </h4>
       </div>
+      {popup && <Popup item={item} itemImg={itemImg} npc={npc} setPopup={setPopup} />}
     </>
   );
 };
