@@ -93,6 +93,8 @@ const App = () => {
         <p>
           <a href="https://limezu.itch.io/">LimeZu</a> - Pixel Arts
         </p>
+        <h2>Contact Us</h2>
+        <img id='qw-qrcode' src="/img/qrcode.png" alt="QR Code" />
       </div>
 
       <br />
