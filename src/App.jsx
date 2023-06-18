@@ -67,20 +67,23 @@ const App = () => {
         <button id="gw-btn-start-game" className={playing ? "gw-hide" : ""} onClick={playGame} disabled={playing}>
           RUN
         </button>
-        <button id="gw-btn-coke" className={playing ? "" : "gw-hide"} onClick={codePlus}>
-          COKE +1
-        </button>
-        <button id="gw-btn-axe" className={playing ? "" : "gw-hide"} onClick={axePlus}>
-          AXE +1
-        </button>
       </div>
 
       <br />
       <br />
       <iframe id="godot-game" className={`game-iframe`} title="GenWorld" src="/game/game.html" />
 
+      <div id="gw-middle" className={playing ? "" : "gw-hide"}>
+        <button id="gw-btn-coke" onClick={codePlus}>
+          COKE +1
+        </button>
+        <button id="gw-btn-axe" onClick={axePlus}>
+          AXE +1
+        </button>
+      </div>
       <br />
       <br />
+
       <div>
         <h2>Hachathon Team</h2>
         <p>Frank Chen - Team Lead</p>
@@ -94,7 +97,7 @@ const App = () => {
           <a href="https://limezu.itch.io/">LimeZu</a> - Pixel Arts
         </p>
         <h2>Contact Us</h2>
-        <img id='qw-qrcode' src="/img/qrcode.png" alt="QR Code" />
+        <img id="qw-qrcode" src="/img/qrcode.png" alt="QR Code" />
       </div>
 
       <br />

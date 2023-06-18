@@ -89,18 +89,6 @@ button:focus-visible {
   bottom: 0;
 }
 
-#gw-btn-coke {
-  position: absolute;
-  right: 20vw;
-  bottom: 0;
-}
-
-#gw-btn-axe {
-  position: absolute;
-  right: 20vw;
-  bottom: 60px;
-}
-
 #godot-game {
   max-width: 640px;
   max-height: 480px;
@@ -108,6 +96,24 @@ button:focus-visible {
   height: 60vw;
   outline: 4px solid #ffffff;
   border: 0px;
+}
+
+#gw-middle {
+  position: relative;
+  background-color: #747bff;
+  width: 100%;
+}
+
+#gw-btn-coke {
+  position: absolute;
+  right: 20vw;
+  top: 20px;
+}
+
+#gw-btn-axe {
+  position: absolute;
+  right: 20vw;
+  top: 80px;
 }
 
 #qw-qrcode {
