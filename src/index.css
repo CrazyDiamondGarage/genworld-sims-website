@@ -70,6 +70,7 @@ button:focus-visible {
 
 #gw-logo {
   width: 50vw;
+  max-width: 400px;
   margin: auto;
   cursor: pointer;
 }
@@ -83,11 +84,13 @@ button:focus-visible {
 
 #gw-btn-start-game {
   position: absolute;
-  right: 8vw;
+  right: 20vw;
   bottom: 0;
 }
 
 #godot-game {
+  max-width: 640px;
+  max-height: 480px;
   width: 80vw;
   height: 60vw;
   outline: 4px solid #ffffff;
@@ -99,6 +102,8 @@ button:focus-visible {
   bottom: 0;
   left: 0;
   right: 0;
+
+  background-color: black;
 }
 
 #gw-footer * {
