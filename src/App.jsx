@@ -99,7 +99,7 @@ const App = () => {
       <br />
 
       <div id="gw-footer">
-        <h4 id="gw-copyright">Copyright © 2023 MetaBorn. All rights reserved.</h4>
+        <h4 id="gw-copyright">Copyright © 2023 Crazy Diamond. All rights reserved.</h4>
 
         <a id="gw-godot" href="https://https://godotengine.org/" target="_blank" rel="noreferrer">
           <img src="/img/godot.png" className="logo" alt="Vite logo" />
