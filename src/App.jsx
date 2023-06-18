@@ -31,10 +31,15 @@ const App = () => {
       <br />
       <iframe id="godot-game" className={`game-iframe`} title="GenWorld" src="/game/game.html" />
 
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+      <div id="gw-footer">
+        <h4 id="gw-copyright">Copyright © 2023 MetaBorn. All rights reserved.</h4>
+
+        <a id="gw-godot" href="https://https://godotengine.org/" target="_blank" rel="noreferrer">
           <img src="/img/godot.png" className="logo" alt="Vite logo" />
         </a>
+        <h4>
+          Made by <a href="https://https://godotengine.org/">Godot Engine</a>.
+        </h4>
       </div>
     </>
   );
