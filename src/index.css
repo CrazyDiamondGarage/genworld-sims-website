@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #000000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -53,6 +53,13 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+#godot-game {
+  width: 80vw;
+  height: 60vw;
+  outline: 4px solid #ffffff;
+  border: 0px;
 }
 
 @media (prefers-color-scheme: light) {

@@ -21,6 +21,8 @@ const App = () => {
       </div>
       <h1>GenWorld</h1>
       <button onClick={playGame}>Start Game</button>
+      <br />
+      <br />
       <iframe id="godot-game" className={`game-iframe`} title="GenWorld" src="/game/game.html" />
     </>
   );
