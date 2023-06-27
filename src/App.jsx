@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+// in index.js
+import packageJson from "../package.json";
+console.log(packageJson.version); // "1.0.0"
 import "./App.css";
 
 const Popup = (props) => {
@@ -151,7 +154,8 @@ const App = () => {
 
       <div id="gw-footer">
         <h5 id="gw-copyright">
-          Copyright © 2023 Crazy Diamond. All rights reserved. Made by{" "}
+          <a onClick={() => window.scrollTo(0, 0)}>GenWorld</a> v{packageJson.version}. Copyright © 2023 Crazy Diamond.
+          All rights reserved. Made by{" "}
           <a href="https://https://godotengine.org/" rel="noreferrer" target="_blank">
             Godot Engine
           </a>{" "}
