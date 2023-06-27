@@ -104,13 +104,10 @@ const App = () => {
       <br />
 
       <div id="gw-footer">
-        <h4 id="gw-copyright">Copyright © 2023 Crazy Diamond. All rights reserved.</h4>
-
-        <a id="gw-godot" href="https://https://godotengine.org/" target="_blank" rel="noreferrer">
-          <img src="/img/godot.png" className="logo" alt="Vite logo" />
-        </a>
-        <h4>
-          Made by <a href="https://https://godotengine.org/">Godot Engine</a>.
+        <h4 id="gw-copyright">
+          Copyright © 2023 Crazy Diamond. All rights reserved. Made by{" "}
+          <a href="https://https://godotengine.org/">Godot Engine</a> and{" "}
+          <a href="https://github.com/101dotxyz/GPTeam">GPTeam</a>.
         </h4>
       </div>
       {popup && <Popup item={item} itemImg={itemImg} npc={npc} setPopup={setPopup} />}
