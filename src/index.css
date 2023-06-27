@@ -89,7 +89,7 @@ button:focus-visible {
   bottom: 0;
 }
 
-#godot-game {
+.game-window {
   max-width: 640px;
   max-height: 480px;
   width: 80vw;

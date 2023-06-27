@@ -71,7 +71,10 @@ const App = () => {
 
       <br />
       <br />
-      <iframe id="godot-game" className={`game-iframe`} title="GenWorld" src="/game/game.html" />
+
+      <iframe id="godot-game" className="game-window" title="GenWorld" src="/game/game.html" />
+
+      {/* <img className="game-window" src="/img/screenshot_01.png"></img> */}
 
       <div id="gw-middle" className={playing ? "" : "gw-hide"}>
         <button id="gw-btn-coke" onClick={codePlus}>
