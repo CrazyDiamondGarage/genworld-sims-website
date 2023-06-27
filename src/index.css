@@ -83,10 +83,17 @@ button:focus-visible {
   padding: 0;
 }
 
+#game-view {
+  position: relative;
+}
+
 #gw-btn-start-game {
   position: absolute;
-  right: 12vw;
-  bottom: 0;
+  top: 40%;
+  bottom: 40%;
+  left: 40%;
+  right: 40%;
+  font-size: xx-large;
 }
 
 .game-window {

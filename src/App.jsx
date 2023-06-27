@@ -64,22 +64,24 @@ const App = () => {
         <div id="gw-logo">
           <img src="/img/genworld.png" className="logo" alt="GenWorld" />
         </div>
-        <button id="gw-btn-start-game" className={playing ? "gw-hide" : ""} onClick={playGame} disabled={playing}>
-          RUN
-        </button>
       </div>
 
       <br />
       <br />
 
-      <iframe
-        id="godot-game"
-        className={`${playing ? "" : "gw-hide"} game-window`}
-        title="GenWorld"
-        src="/game/game.html"
-      />
+      <div id="game-view">
+        <iframe
+          id="godot-game"
+          className={`${playing ? "" : "gw-hide"} game-window`}
+          title="GenWorld"
+          src="/game/game.html"
+        />
 
-      <img className={`${playing ? "gw-hide" : ""} game-window`} src="/img/screenshot_01.png"></img>
+        <img className={`${playing ? "gw-hide" : ""} game-window`} src="/img/screenshot_01.png" />
+        <button id="gw-btn-start-game" className={playing ? "gw-hide" : ""} onClick={playGame} disabled={playing}>
+          RUN
+        </button>
+      </div>
 
       <div id="gw-middle" className={playing ? "" : "gw-hide"}>
         <button id="gw-btn-coke" onClick={codePlus}>
@@ -94,17 +96,53 @@ const App = () => {
 
       <div>
         <h2>Hachathon Team</h2>
-        <p>Frank Chen - Team Lead</p>
-        <p>Todd Zhang - Game Dev</p>
-        <p>Chang - Backend Dev</p>
-        <p>Yewlne Lin - PM</p>
-        <p>Aero Xi - AI Engr</p>
-        <p>Shuju Chen - Prompt Engr</p>
+        <p>
+          <a href="https://twitter.com/chenboos5" rel="noreferrer" target="_blank">
+            Frank Chen
+          </a>{" "}
+          - Team Lead
+        </p>
+        <p>
+          <a href="https://twitter.com/JustinSoong_eth" rel="noreferrer" target="_blank">
+            Justin Song
+          </a>{" "}
+          - Marketing & Community
+        </p>
+        <p>
+          <a href="https://twitter.com/yewlne7" rel="noreferrer" target="_blank">
+            Yewlne Lin
+          </a>{" "}
+          - Project Manager
+        </p>
+        <p>
+          <a href="https://twitter.com/_endaye" rel="noreferrer" target="_blank">
+            Todd Zhang
+          </a>{" "}
+          - Game Developer
+        </p>
+        <p>
+          <a href="https://twitter.com/33Cha2" rel="noreferrer" target="_blank">
+            Chang
+          </a>{" "}
+          - Backend Developer
+        </p>
+
+        <p>
+          <a href="https://twitter.com/magic_talent" rel="noreferrer" target="_blank">
+            Aero Xi
+          </a>{" "}
+          - AI Engineer
+        </p>
+        <p>Shuju Chen - Prompt Engineer</p>
         <h2>Credits</h2>
         <p>
           <a href="https://limezu.itch.io/">LimeZu</a> - Pixel Arts
         </p>
         <h2>Contact Us</h2>
+        <p>
+          <a href="mailto:contact@genworld.io">contact@genworld.io</a>{" "}
+        </p>
+
         <img id="qw-qrcode" src="/img/qrcode.png" alt="QR Code" />
       </div>
 
@@ -112,11 +150,17 @@ const App = () => {
       <br />
 
       <div id="gw-footer">
-        <h4 id="gw-copyright">
+        <h5 id="gw-copyright">
           Copyright © 2023 Crazy Diamond. All rights reserved. Made by{" "}
-          <a href="https://https://godotengine.org/">Godot Engine</a> and{" "}
-          <a href="https://github.com/101dotxyz/GPTeam">GPTeam</a>.
-        </h4>
+          <a href="https://https://godotengine.org/" rel="noreferrer" target="_blank">
+            Godot Engine
+          </a>{" "}
+          and{" "}
+          <a href="https://github.com/101dotxyz/GPTeam" rel="noreferrer" target="_blank">
+            GPTeam
+          </a>
+          .
+        </h5>
       </div>
       {popup && <Popup item={item} itemImg={itemImg} npc={npc} setPopup={setPopup} />}
     </>
