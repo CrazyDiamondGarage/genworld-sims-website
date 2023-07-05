@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
 import truncateEthAddress from "truncate-eth-address";
 import { RequestManager } from "eth-connect";
+import { WalletProvider, ConnectButton, useWallet, addressEllipsis } from "@suiet/wallet-kit";
+
 // in index.js
 import packageJson from "../package.json";
 console.log(packageJson.version); // "1.0.0"
+import "@suiet/wallet-kit/style.css";
 import "./App.css";
 
 const mirrorworld = new MirrorWorld({
@@ -82,10 +85,14 @@ const App = () => {
     }
   };
 
-  const loginSui = async () => {};
+  const wallet = useWallet();
+  console.log(wallet);
+  console.log("wallet status", wallet.status);
+  console.log("connected wallet name", wallet.name);
+  console.log("connected account info", wallet.account);
 
   return (
-    <>
+    <WalletProvider>
       <div id="gw-top">
         <div id="gw-logo">
           <img src="/img/genworld.png" className="logo" alt="GenWorld" />
@@ -93,8 +100,10 @@ const App = () => {
       </div>
 
       <div id="gw-social">
-        <button onClick={loginEthereum}>{`ETH ${ethAcc ? truncateEthAddress(ethAcc) : ""}`}</button>
-        <button onClick={loginSui}>SUI</button>
+        <button className="gw-btn-connect" onClick={loginEthereum}>{`ETH ${
+          ethAcc ? truncateEthAddress(ethAcc) : ""
+        }`}</button>
+        <ConnectButton className="gw-btn-connect">SUI</ConnectButton>
       </div>
 
       <br />
@@ -207,7 +216,7 @@ const App = () => {
         </h5>
       </div>
       {popup && <Popup item={item} itemImg={itemImg} npc={npc} setPopup={setPopup} />}
-    </>
+    </WalletProvider>
   );
 };
 

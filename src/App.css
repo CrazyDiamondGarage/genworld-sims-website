@@ -45,8 +45,26 @@
   padding: 0;
 }
 
-#gw-social button {
+#gw-logo div {
+  display: inline-block;
+}
+
+.gw-btn-connect {
+  display: inline-block;
   margin: 0 10px;
+}
+
+#gw-social .wkit-button {
+  margin: 8px auto;
+  width: auto;
+}
+
+#gw-social * {
+  color: white;
+}
+
+#gw-social .wkit-connected-container {
+  margin: 8px auto;
 }
 
 #game-view {
