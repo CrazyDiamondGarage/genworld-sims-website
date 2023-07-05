@@ -1,15 +1,9 @@
-import React, { useState } from "react";
-import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
-
+import { useState } from "react";
+import { RequestManager } from "eth-connect";
 // in index.js
 import packageJson from "../package.json";
 console.log(packageJson.version); // "1.0.0"
 import "./App.css";
-
-const mirrorworld = new MirrorWorld({
-  apiKey: import.meta.env.VITE_APP_MIRROR_WORLD_API_KEY,
-  chainConfig: Sui("mainnet"),
-});
 
 const Popup = (props) => {
   const onCancel = () => {
@@ -35,6 +29,7 @@ const Popup = (props) => {
 };
 
 const App = () => {
+  const [ethAcc, setEthAcc] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [item, setItem] = useState("a bottle of Coke");
   const [itemImg, setItemImg] = useState("/img/coke.png");
@@ -69,16 +64,19 @@ const App = () => {
   };
 
   const loginEthereum = async () => {
-    mirrorworld.chainConfig = Ethereum("mainnet");
-    const { refreshToken, user } = await mirrorworld.login();
-    console.debug(refreshToken, user);
+    if (!web3) {
+      alert("Please install MetaMask");
+      return;
+    }
+    const requestManager = new RequestManager(web3.currentProvider);
+    const accounts = await requestManager.eth_accounts();
+    console.debug(requestManager);
+    if (accounts && accounts.length >= 0) {
+      setEthAcc(accounts[0]);
+    }
   };
 
-  const loginSui = async () => {
-    mirrorworld.chainConfig = Sui("mainnet");
-    const { refreshToken, user } = await mirrorworld.login();
-    console.debug(refreshToken, user);
-  };
+  const loginSui = async () => {};
 
   return (
     <>
@@ -89,7 +87,7 @@ const App = () => {
       </div>
 
       <div id="gw-social">
-        <button onClick={loginEthereum}>ETH</button>
+        <button onClick={loginEthereum}>{ethAcc ? ethAcc : "ETH"}</button>
         <button onClick={loginSui}>SUI</button>
       </div>
 
