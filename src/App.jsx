@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
+import truncateEthAddress from "truncate-eth-address";
 import { RequestManager } from "eth-connect";
 // in index.js
 import packageJson from "../package.json";
@@ -92,7 +93,7 @@ const App = () => {
       </div>
 
       <div id="gw-social">
-        <button onClick={loginEthereum}>{ethAcc ? ethAcc : "ETH"}</button>
+        <button onClick={loginEthereum}>{`ETH ${ethAcc ? truncateEthAddress(ethAcc) : ""}`}</button>
         <button onClick={loginSui}>SUI</button>
       </div>
 
