@@ -1,9 +1,15 @@
 import { useState } from "react";
+import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
 import { RequestManager } from "eth-connect";
 // in index.js
 import packageJson from "../package.json";
 console.log(packageJson.version); // "1.0.0"
 import "./App.css";
+
+const mirrorworld = new MirrorWorld({
+  apiKey: import.meta.env.VITE_APP_MIRROR_WORLD_API_KEY,
+  chainConfig: Sui("mainnet"),
+});
 
 const Popup = (props) => {
   const onCancel = () => {
@@ -70,7 +76,6 @@ const App = () => {
     }
     const requestManager = new RequestManager(web3.currentProvider);
     const accounts = await requestManager.eth_accounts();
-    console.debug(requestManager);
     if (accounts && accounts.length >= 0) {
       setEthAcc(accounts[0]);
     }
@@ -151,7 +156,6 @@ const App = () => {
           </a>{" "}
           - Backend Developer
         </p>
-
         <p>
           <a href="https://twitter.com/magic_talent" rel="noreferrer" target="_blank">
             Aero Xi
@@ -161,13 +165,34 @@ const App = () => {
         <p>Shuju Chen - Prompt Engineer</p>
         <h2>Credits</h2>
         <p>
-          <a href="https://limezu.itch.io/">LimeZu</a> - Pixel Arts
+          <a href="https://limezu.itch.io/" rel="noreferrer" target="_blank">
+            LimeZu
+          </a>{" "}
+          - Pixel Arts
         </p>
+        <p>
+          <a href="https://https://godotengine.org/" rel="noreferrer" target="_blank">
+            Godot Engine
+          </a>{" "}
+          - Game Engine
+        </p>
+        <p>
+          <a href="https://github.com/101dotxyz/GPTeam" rel="noreferrer" target="_blank">
+            GPTeam
+          </a>{" "}
+          - AI Agents
+        </p>
+        <p>
+          <a href="https://mirrorworld.fun/" rel="noreferrer" target="_blank">
+            Mirror World
+          </a>{" "}
+          - Web3 Auth
+        </p>
+
         <h2>Contact Us</h2>
         <p>
           <a href="mailto:contact@genworld.io">contact@genworld.io</a>{" "}
         </p>
-
         <img id="qw-qrcode" src="/img/qrcode.png" alt="QR Code" />
       </div>
 
@@ -177,15 +202,7 @@ const App = () => {
       <div id="gw-footer">
         <h5 id="gw-copyright">
           <a onClick={() => window.scrollTo(0, 0)}>GenWorld</a> v{packageJson.version}. Copyright © 2023 Crazy Diamond.
-          All rights reserved. Made by{" "}
-          <a href="https://https://godotengine.org/" rel="noreferrer" target="_blank">
-            Godot Engine
-          </a>{" "}
-          and{" "}
-          <a href="https://github.com/101dotxyz/GPTeam" rel="noreferrer" target="_blank">
-            GPTeam
-          </a>
-          .
+          All rights reserved.
         </h5>
       </div>
       {popup && <Popup item={item} itemImg={itemImg} npc={npc} setPopup={setPopup} />}
