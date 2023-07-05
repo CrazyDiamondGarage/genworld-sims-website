@@ -8,31 +8,8 @@ import "./App.css";
 
 const mirrorworld = new MirrorWorld({
   apiKey: import.meta.env.VITE_APP_MIRROR_WORLD_API_KEY,
-  chainConfig: Ethereum("mainnet"),
+  chainConfig: Sui("mainnet"),
 });
-
-// Reassigns chain config to Solana devnet
-// mirrorworld.chainConfig = Ethereum("devnet");
-// console.log(mirrorworld.chainConfig); // { chain: "ethereum", network: "devnet" }
-
-// // Reassigns chain config to Ethereum mainnet
-// mirrorworld.chainConfig = Sui("mainnet");
-// console.log(mirrorworld.chainConfig); // { chain: "sui", network: "mainnet" }
-
-const main = async () => {
-  console.debug(mirrorworld);
-  const { refreshToken, user } = await mirrorworld.login();
-  console.debug(refreshToken, user);
-  // const { user } = await mirrorworld.value.login();
-  // const tokens = await mirrorworld.value.Solana.Wallet.fetchTokens();
-  // const nfts = await mirrorworld.value.Solana.Asset.fetchNFTsByOwnerAddresses({ owners: [user.wallet.sol_address] });
-
-  // console.debug(user);
-  // console.debug(tokens);
-  // console.debug(nfts);
-};
-
-// main();
 
 const Popup = (props) => {
   const onCancel = () => {
@@ -92,15 +69,15 @@ const App = () => {
   };
 
   const loginEthereum = async () => {
+    mirrorworld.chainConfig = Ethereum("mainnet");
     const { refreshToken, user } = await mirrorworld.login();
     console.debug(refreshToken, user);
-    // const { user } = await mirrorworld.value.login();
-    // const tokens = await mirrorworld.value.Solana.Wallet.fetchTokens();
-    // const nfts = await mirrorworld.value.Solana.Asset.fetchNFTsByOwnerAddresses({ owners: [user.wallet.sol_address] });
+  };
 
-    // console.debug(user);
-    // console.debug(tokens);
-    // console.debug(nfts);
+  const loginSui = async () => {
+    mirrorworld.chainConfig = Sui("mainnet");
+    const { refreshToken, user } = await mirrorworld.login();
+    console.debug(refreshToken, user);
   };
 
   return (
@@ -111,8 +88,9 @@ const App = () => {
         </div>
       </div>
 
-      <div>
-        <button onClick={loginEthereum}>Ethereum</button>
+      <div id="gw-social">
+        <button onClick={loginEthereum}>ETH</button>
+        <button onClick={loginSui}>SUI</button>
       </div>
 
       <br />
