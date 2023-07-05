@@ -1,8 +1,38 @@
 import React, { useState } from "react";
+import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
+
 // in index.js
 import packageJson from "../package.json";
 console.log(packageJson.version); // "1.0.0"
 import "./App.css";
+
+const mirrorworld = new MirrorWorld({
+  apiKey: import.meta.env.VITE_APP_MIRROR_WORLD_API_KEY,
+  chainConfig: Ethereum("mainnet"),
+});
+
+// Reassigns chain config to Solana devnet
+// mirrorworld.chainConfig = Ethereum("devnet");
+// console.log(mirrorworld.chainConfig); // { chain: "ethereum", network: "devnet" }
+
+// // Reassigns chain config to Ethereum mainnet
+// mirrorworld.chainConfig = Sui("mainnet");
+// console.log(mirrorworld.chainConfig); // { chain: "sui", network: "mainnet" }
+
+const main = async () => {
+  console.debug(mirrorworld);
+  const { refreshToken, user } = await mirrorworld.login();
+  console.debug(refreshToken, user);
+  // const { user } = await mirrorworld.value.login();
+  // const tokens = await mirrorworld.value.Solana.Wallet.fetchTokens();
+  // const nfts = await mirrorworld.value.Solana.Asset.fetchNFTsByOwnerAddresses({ owners: [user.wallet.sol_address] });
+
+  // console.debug(user);
+  // console.debug(tokens);
+  // console.debug(nfts);
+};
+
+// main();
 
 const Popup = (props) => {
   const onCancel = () => {
@@ -61,12 +91,28 @@ const App = () => {
     setPopup(true);
   };
 
+  const loginEthereum = async () => {
+    const { refreshToken, user } = await mirrorworld.login();
+    console.debug(refreshToken, user);
+    // const { user } = await mirrorworld.value.login();
+    // const tokens = await mirrorworld.value.Solana.Wallet.fetchTokens();
+    // const nfts = await mirrorworld.value.Solana.Asset.fetchNFTsByOwnerAddresses({ owners: [user.wallet.sol_address] });
+
+    // console.debug(user);
+    // console.debug(tokens);
+    // console.debug(nfts);
+  };
+
   return (
     <>
       <div id="gw-top">
         <div id="gw-logo">
           <img src="/img/genworld.png" className="logo" alt="GenWorld" />
         </div>
+      </div>
+
+      <div>
+        <button onClick={loginEthereum}>Ethereum</button>
       </div>
 
       <br />
