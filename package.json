@@ -1,7 +1,7 @@
 {
   "name": "hack-gpt-website",
   "private": true,
-  "version": "1.2.9",
+  "version": "1.2.10",
   "type": "module",
   "scripts": {
     "dev": "vite --mode dev",
