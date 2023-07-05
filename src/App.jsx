@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MirrorWorld, Ethereum, Sui } from "@mirrorworld/web3.js";
 import truncateEthAddress from "truncate-eth-address";
 import { RequestManager } from "eth-connect";
-import { WalletProvider, ConnectButton, useWallet, addressEllipsis } from "@suiet/wallet-kit";
+import { WalletProvider, ConnectButton, useWallet } from "@suiet/wallet-kit";
 
 // in index.js
 import packageJson from "../package.json";
@@ -40,6 +40,7 @@ const Popup = (props) => {
 
 const App = () => {
   const [ethAcc, setEthAcc] = useState(null);
+  const [suiAcc, setSuiAcc] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [item, setItem] = useState("a bottle of Coke");
   const [itemImg, setItemImg] = useState("/img/coke.png");
@@ -85,11 +86,9 @@ const App = () => {
     }
   };
 
-  const wallet = useWallet();
-  console.log(wallet);
-  console.log("wallet status", wallet.status);
-  console.log("connected wallet name", wallet.name);
-  console.log("connected account info", wallet.account);
+  const loginMirrorWorld = async () => {
+    mirrorworld.login();
+  };
 
   return (
     <WalletProvider>
@@ -104,6 +103,9 @@ const App = () => {
         <button className="gw-btn-connect" onClick={loginEthereum}>{`ETH ${
           ethAcc ? truncateEthAddress(ethAcc) : ""
         }`}</button>
+        {/* <button className="gw-btn-connect" onClick={loginMirrorWorld}>
+          Mirror World
+        </button> */}
       </div>
 
       <br />
