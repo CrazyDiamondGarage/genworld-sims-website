@@ -100,9 +100,9 @@ const App = () => {
 
       <div id="gw-social">
         <ConnectButton className="gw-btn-connect">SUI</ConnectButton>
-        <button className="gw-btn-connect" onClick={loginEthereum}>{`ETH ${
+        {/* <button className="gw-btn-connect" onClick={loginEthereum}>{`ETH ${
           ethAcc ? truncateEthAddress(ethAcc) : ""
-        }`}</button>
+        }`}</button> */}
         {/* <button className="gw-btn-connect" onClick={loginMirrorWorld}>
           Mirror World
         </button> */}
