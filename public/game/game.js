@@ -30467,6 +30467,7 @@ var GodotWebXR = {
  view_count: 1,
  input_sources: [ , , , , , , , , , , , , , , ,  ],
  touches: [ , , , ,  ],
+ onsimpleevent: null,
  orig_requestAnimationFrame: null,
  requestAnimationFrame: callback => {
   if (GodotWebXR.session && GodotWebXR.space) {
@@ -30672,6 +30673,7 @@ function _godot_webxr_initialize(p_session_mode, p_required_features, p_optional
    onsimpleevent(c_str);
    GodotRuntime.free(c_str);
   });
+  GodotWebXR.onsimpleevent = onsimpleevent;
   const gl_context_handle = _emscripten_webgl_get_current_context();
   const gl = GL.getContext(gl_context_handle).GLctx;
   GodotWebXR.gl = gl;
@@ -30737,6 +30739,7 @@ function _godot_webxr_uninitialize() {
  GodotWebXR.view_count = 1;
  GodotWebXR.input_sources = new Array(16);
  GodotWebXR.touches = new Array(5);
+ GodotWebXR.onsimpleevent = null;
  GodotWebXR.monkeyPatchRequestAnimationFrame(false);
  GodotWebXR.pauseResumeMainLoop();
 }
@@ -30966,6 +30969,55 @@ function _godot_webxr_get_bounds_geometry(r_points) {
 Module["_godot_webxr_get_bounds_geometry"] = _godot_webxr_get_bounds_geometry;
 
 _godot_webxr_get_bounds_geometry.sig = "ii";
+
+function _godot_webxr_get_frame_rate() {
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(447, 1);
+ if (!GodotWebXR.session || GodotWebXR.session.frameRate === undefined) {
+  return 0;
+ }
+ return GodotWebXR.session.frameRate;
+}
+
+Module["_godot_webxr_get_frame_rate"] = _godot_webxr_get_frame_rate;
+
+_godot_webxr_get_frame_rate.sig = "i";
+
+function _godot_webxr_update_target_frame_rate(p_frame_rate) {
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(448, 1, p_frame_rate);
+ if (!GodotWebXR.session || GodotWebXR.session.updateTargetFrameRate === undefined) {
+  return;
+ }
+ GodotWebXR.session.updateTargetFrameRate(p_frame_rate).then(() => {
+  const c_str = GodotRuntime.allocString("display_refresh_rate_changed");
+  GodotWebXR.onsimpleevent(c_str);
+  GodotRuntime.free(c_str);
+ });
+}
+
+Module["_godot_webxr_update_target_frame_rate"] = _godot_webxr_update_target_frame_rate;
+
+_godot_webxr_update_target_frame_rate.sig = "vi";
+
+function _godot_webxr_get_supported_frame_rates(r_frame_rates) {
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(449, 1, r_frame_rates);
+ if (!GodotWebXR.session || GodotWebXR.session.supportedFrameRates === undefined) {
+  return 0;
+ }
+ const frame_rate_count = GodotWebXR.session.supportedFrameRates.length;
+ if (frame_rate_count === 0) {
+  return 0;
+ }
+ const buf = GodotRuntime.malloc(frame_rate_count * 4);
+ for (let i = 0; i < frame_rate_count; i++) {
+  GodotRuntime.setHeapValue(buf + i * 4, GodotWebXR.session.supportedFrameRates[i], "float");
+ }
+ GodotRuntime.setHeapValue(r_frame_rates, buf, "i32");
+ return frame_rate_count;
+}
+
+Module["_godot_webxr_get_supported_frame_rates"] = _godot_webxr_get_supported_frame_rates;
+
+_godot_webxr_get_supported_frame_rates.sig = "ii";
 
 var IDHandler = {
  _last_id: 0,
@@ -31909,7 +31961,7 @@ var GodotAudio = {
 Module["GodotAudio"] = GodotAudio;
 
 function _godot_audio_is_available() {
- if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(447, 1);
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(450, 1);
  if (!(window.AudioContext || window.webkitAudioContext)) {
   return 0;
  }
@@ -31960,7 +32012,7 @@ Module["_godot_audio_resume"] = _godot_audio_resume;
 _godot_audio_resume.sig = "v";
 
 function _godot_audio_input_start() {
- if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(448, 1);
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(451, 1);
  return GodotAudio.create_input(function(input) {
   input.connect(GodotAudio.driver.get_node());
  });
@@ -31971,7 +32023,7 @@ Module["_godot_audio_input_start"] = _godot_audio_input_start;
 _godot_audio_input_start.sig = "i";
 
 function _godot_audio_input_stop() {
- if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(449, 1);
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(452, 1);
  if (GodotAudio.input) {
   const tracks = GodotAudio.input["mediaStream"]["getTracks"]();
   for (let i = 0; i < tracks.length; i++) {
@@ -33082,17 +33134,22 @@ var GodotFetch = {
    return;
   }
   let chunked = false;
+  let bodySize = -1;
   response.headers.forEach(function(value, header) {
    const v = value.toLowerCase().trim();
    const h = header.toLowerCase().trim();
    if (h === "transfer-encoding" && v === "chunked") {
     chunked = true;
    }
+   if (h === "content-length") {
+    bodySize = parseInt(v, 10);
+   }
   });
   obj.status = response.status;
   obj.response = response;
   obj.reader = response.body.getReader();
   obj.chunked = chunked;
+  obj.bodySize = bodySize;
  },
  onerror: function(id, err) {
   GodotRuntime.error(err);
@@ -33344,6 +33401,31 @@ function _godot_js_os_fs_sync(callback) {
 Module["_godot_js_os_fs_sync"] = _godot_js_os_fs_sync;
 
 _godot_js_os_fs_sync.sig = "vi";
+
+function _godot_js_os_has_feature(p_ftr) {
+ const ftr = GodotRuntime.parseString(p_ftr);
+ const ua = navigator.userAgent;
+ if (ftr === "web_macos") {
+  return ua.indexOf("Mac") !== -1 ? 1 : 0;
+ }
+ if (ftr === "web_windows") {
+  return ua.indexOf("Windows") !== -1 ? 1 : 0;
+ }
+ if (ftr === "web_android") {
+  return ua.indexOf("Android") !== -1 ? 1 : 0;
+ }
+ if (ftr === "web_ios") {
+  return ua.indexOf("iPhone") !== -1 || ua.indexOf("iPad") !== -1 || ua.indexOf("iPod") !== -1 ? 1 : 0;
+ }
+ if (ftr === "web_linuxbsd") {
+  return ua.indexOf("CrOS") !== -1 || ua.indexOf("BSD") !== -1 || ua.indexOf("Linux") !== -1 || ua.indexOf("X11") !== -1 ? 1 : 0;
+ }
+ return 0;
+}
+
+Module["_godot_js_os_has_feature"] = _godot_js_os_has_feature;
+
+_godot_js_os_has_feature.sig = "ii";
 
 function _godot_js_os_execute(p_json) {
  const json_args = GodotRuntime.parseString(p_json);
@@ -33941,7 +34023,7 @@ var GodotWebGL2 = {};
 Module["GodotWebGL2"] = GodotWebGL2;
 
 function _godot_webgl2_glFramebufferTextureMultiviewOVR(target, attachment, texture, level, base_view_index, num_views) {
- if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(450, 1, target, attachment, texture, level, base_view_index, num_views);
+ if (ENVIRONMENT_IS_PTHREAD) return _emscripten_proxy_to_main_thread_js(453, 1, target, attachment, texture, level, base_view_index, num_views);
  const context = GL.currentContext;
  if (typeof context.multiviewExt === "undefined") {
   const ext = context.GLctx.getExtension("OVR_multiview2");
@@ -34583,7 +34665,7 @@ GodotOS.atexit(function(resolve, reject) {
 
 GodotJSWrapper.proxies = new Map();
 
-var proxiedFunctionTable = [ null, _proc_exit, exitOnMainThread, pthreadCreateProxied, ___syscall__newselect, ___syscall_accept4, ___syscall_bind, ___syscall_chdir, ___syscall_chmod, ___syscall_connect, ___syscall_dup, ___syscall_dup3, ___syscall_faccessat, ___syscall_fallocate, ___syscall_fchdir, ___syscall_fchmod, ___syscall_fchmodat, ___syscall_fchown32, ___syscall_fchownat, ___syscall_fcntl64, ___syscall_fdatasync, ___syscall_fstat64, ___syscall_fstatfs64, ___syscall_statfs64, ___syscall_ftruncate64, ___syscall_getcwd, ___syscall_getdents64, ___syscall_getpeername, ___syscall_getsockname, ___syscall_getsockopt, ___syscall_ioctl, ___syscall_listen, ___syscall_lstat64, ___syscall_mkdirat, ___syscall_mknodat, ___syscall_newfstatat, ___syscall_openat, ___syscall_pipe, ___syscall_poll, ___syscall_readlinkat, ___syscall_recvfrom, ___syscall_recvmsg, ___syscall_renameat, ___syscall_rmdir, ___syscall_sendmsg, ___syscall_sendto, ___syscall_socket, ___syscall_stat64, ___syscall_symlink, ___syscall_symlinkat, ___syscall_truncate64, ___syscall_unlinkat, ___syscall_utimensat, __mmap_js, __msync_js, __munmap_js, _tzset_impl, _alBuffer3f, _alBuffer3i, _alBufferData, _alBufferf, _alBufferfv, _alBufferi, _alBufferiv, _alDeleteBuffers, _alDeleteSources, _alSourcei, _alDisable, _alDistanceModel, _alDopplerFactor, _alDopplerVelocity, _alEnable, _alGenBuffers, _alGenSources, _alGetBoolean, _alGetBooleanv, _alGetBuffer3f, _alGetBuffer3i, _alGetBufferf, _alGetBufferfv, _alGetBufferi, _alGetBufferiv, _alGetDouble, _alGetDoublev, _alGetEnumValue, _alGetError, _alGetFloat, _alGetFloatv, _alGetInteger, _alGetIntegerv, _alGetListener3f, _alGetListener3i, _alGetListenerf, _alGetListenerfv, _alGetListeneri, _alGetListeneriv, _alGetSource3f, _alGetSource3i, _alGetSourcef, _alGetSourcefv, _alGetSourcei, _alGetSourceiv, _alGetString, _alIsBuffer, _alIsEnabled, _alIsExtensionPresent, _alIsSource, _alListener3f, _alListener3i, _alListenerf, _alListenerfv, _alListeneri, _alListeneriv, _alSource3f, _alSource3i, _alSourcePause, _alSourcePausev, _alSourcePlay, _alSourcePlayv, _alSourceQueueBuffers, _alSourceRewind, _alSourceRewindv, _alSourceStop, _alSourceStopv, _alSourceUnqueueBuffers, _alSourcef, _alSourcefv, _alSourceiv, _alSpeedOfSound, _alcCaptureCloseDevice, _alcCaptureOpenDevice, _alcCaptureSamples, _alcCaptureStart, _alcCaptureStop, _alcCloseDevice, _alcCreateContext, _alcDestroyContext, _alcGetContextsDevice, _alcGetCurrentContext, _alcGetEnumValue, _alcGetError, _alcGetIntegerv, _alcGetString, _alcIsExtensionPresent, _alcMakeContextCurrent, _alcOpenDevice, _emscripten_alcDevicePauseSOFT, _emscripten_alcDeviceResumeSOFT, _emscripten_alcGetStringiSOFT, _emscripten_alcResetDeviceSOFT, _emscripten_webgl_create_context_proxied, _environ_get, _environ_sizes_get, _fd_close, _fd_fdstat_get, _fd_pread, _fd_pwrite, _fd_read, _fd_seek, _fd_sync, _fd_write, _gethostbyaddr, _gethostbyname, _gethostbyname_r, _getaddrinfo, _emscripten_force_exit, ___syscall_rename, _emscripten_set_keypress_callback_on_thread, _emscripten_set_keydown_callback_on_thread, _emscripten_set_keyup_callback_on_thread, _emscripten_set_click_callback_on_thread, _emscripten_set_mousedown_callback_on_thread, _emscripten_set_mouseup_callback_on_thread, _emscripten_set_dblclick_callback_on_thread, _emscripten_set_mousemove_callback_on_thread, _emscripten_set_mouseenter_callback_on_thread, _emscripten_set_mouseleave_callback_on_thread, _emscripten_set_mouseover_callback_on_thread, _emscripten_set_mouseout_callback_on_thread, _emscripten_get_mouse_status, _emscripten_set_wheel_callback_on_thread, _emscripten_set_resize_callback_on_thread, _emscripten_set_scroll_callback_on_thread, _emscripten_set_blur_callback_on_thread, _emscripten_set_focus_callback_on_thread, _emscripten_set_focusin_callback_on_thread, _emscripten_set_focusout_callback_on_thread, _emscripten_set_deviceorientation_callback_on_thread, _emscripten_get_deviceorientation_status, _emscripten_set_devicemotion_callback_on_thread, _emscripten_get_devicemotion_status, _emscripten_set_orientationchange_callback_on_thread, _emscripten_get_orientation_status, _emscripten_lock_orientation, _emscripten_unlock_orientation, _emscripten_set_fullscreenchange_callback_on_thread, _emscripten_get_fullscreen_status, _emscripten_get_canvas_element_size_main_thread, _emscripten_set_canvas_element_size_main_thread, _emscripten_request_fullscreen, _emscripten_request_fullscreen_strategy, _emscripten_enter_soft_fullscreen, _emscripten_exit_soft_fullscreen, _emscripten_exit_fullscreen, _emscripten_set_pointerlockchange_callback_on_thread, _emscripten_set_pointerlockerror_callback_on_thread, _emscripten_get_pointerlock_status, _emscripten_request_pointerlock, _emscripten_exit_pointerlock, _emscripten_vibrate, _emscripten_vibrate_pattern, _emscripten_set_visibilitychange_callback_on_thread, _emscripten_get_visibility_status, _emscripten_set_touchstart_callback_on_thread, _emscripten_set_touchend_callback_on_thread, _emscripten_set_touchmove_callback_on_thread, _emscripten_set_touchcancel_callback_on_thread, _emscripten_set_gamepadconnected_callback_on_thread, _emscripten_set_gamepaddisconnected_callback_on_thread, _emscripten_sample_gamepad_data, _emscripten_get_num_gamepads, _emscripten_get_gamepad_status, _emscripten_set_beforeunload_callback_on_thread, _emscripten_set_batterychargingchange_callback_on_thread, _emscripten_set_batterylevelchange_callback_on_thread, _emscripten_get_battery_status, _emscripten_set_element_css_size, _emscripten_get_element_css_size, _emscripten_get_device_pixel_ratio, _clock_time_get, _clock_res_get, _emscripten_run_preload_plugins, _emscripten_run_preload_plugins_data, _emscripten_get_window_title, _emscripten_set_window_title, _emscripten_get_screen_size, _emscripten_hide_mouse, _emscripten_set_canvas_size, _emscripten_get_canvas_size, _emscripten_create_worker, _emscripten_destroy_worker, _emscripten_call_worker, _emscripten_get_worker_queue_size, _emscripten_get_preloaded_image_data, _emscripten_get_preloaded_image_data_from_FILE, _emscripten_async_wget, _emscripten_async_wget_data, _emscripten_async_wget2, _emscripten_async_wget2_data, _emscripten_async_wget2_abort, _emscripten_webgl_get_drawing_buffer_size, _emscripten_webgl_get_context_attributes, _emscripten_webgl_destroy_context, _emscripten_webgl_enable_extension, _emscripten_set_webglcontextlost_callback_on_thread, _emscripten_set_webglcontextrestored_callback_on_thread, _emscripten_is_webgl_context_lost, _emscripten_webgl_get_supported_extensions, _emscripten_webgl_get_program_parameter_d, _emscripten_webgl_get_program_info_log_utf8, _emscripten_webgl_get_shader_parameter_d, _emscripten_webgl_get_shader_info_log_utf8, _emscripten_webgl_get_shader_source_utf8, _emscripten_webgl_get_vertex_attrib_d, _emscripten_webgl_get_vertex_attrib_o, _emscripten_webgl_get_vertex_attrib_v, _emscripten_webgl_get_uniform_d, _emscripten_webgl_get_uniform_v, _emscripten_webgl_get_parameter_v, _emscripten_webgl_get_parameter_d, _emscripten_webgl_get_parameter_o, _emscripten_webgl_get_parameter_utf8, _emscripten_webgl_get_parameter_i64v, _SDL_GetTicks, _SDL_LockSurface, _SDL_Linked_Version, _SDL_Init, _SDL_WasInit, _SDL_GetVideoInfo, _SDL_VideoDriverName, _SDL_SetVideoMode, _SDL_GetVideoSurface, _SDL_AudioQuit, _SDL_UnlockSurface, _SDL_WM_SetCaption, _SDL_GetKeyboardState, _SDL_GetKeyName, _SDL_GetModState, _SDL_GetMouseState, _SDL_WarpMouse, _SDL_ShowCursor, _SDL_GetError, _SDL_CreateRGBSurface, _SDL_CreateRGBSurfaceFrom, _SDL_ConvertSurface, _SDL_FreeSurface, _SDL_UpperBlit, _SDL_UpperBlitScaled, _SDL_GetClipRect, _SDL_SetClipRect, _SDL_FillRect, _SDL_BlitSurface, _SDL_BlitScaled, _SDL_SetAlpha, _SDL_PollEvent, _SDL_PushEvent, _SDL_PeepEvents, _SDL_PumpEvents, _emscripten_SDL_SetEventHandler, _SDL_SetColors, _SDL_MapRGB, _SDL_MapRGBA, _SDL_GetRGB, _SDL_GetRGBA, _SDL_GetAppState, _SDL_WM_ToggleFullScreen, _IMG_Load_RW, _SDL_FreeRW, _IMG_Load, _SDL_RWFromFile, _SDL_OpenAudio, _SDL_PauseAudio, _SDL_CloseAudio, _SDL_StartTextInput, _SDL_StopTextInput, _Mix_OpenAudio, _Mix_AllocateChannels, _Mix_ChannelFinished, _Mix_Volume, _Mix_SetPanning, _Mix_LoadWAV_RW, _Mix_LoadWAV, _Mix_QuickLoad_RAW, _Mix_FreeChunk, _Mix_ReserveChannels, _Mix_PlayChannel, _Mix_HaltChannel, _Mix_HookMusicFinished, _Mix_HaltMusic, _Mix_VolumeMusic, _Mix_LoadMUS, _Mix_PlayMusic, _Mix_PauseMusic, _Mix_ResumeMusic, _Mix_PlayingMusic, _Mix_Playing, _Mix_Pause, _Mix_Paused, _Mix_PausedMusic, _Mix_Resume, _TTF_Init, _TTF_OpenFont, _TTF_CloseFont, _TTF_RenderText_Solid, _TTF_SizeText, _TTF_GlyphMetrics, _TTF_FontAscent, _TTF_FontDescent, _TTF_FontHeight, _SDL_GL_SetAttribute, _SDL_GL_GetAttribute, _SDL_GL_SwapBuffers, _SDL_GL_ExtensionSupported, _SDL_GetWindowFlags, _SDL_GL_GetSwapInterval, _SDL_SetWindowTitle, _SDL_GetWindowSize, _SDL_SetWindowFullscreen, _SDL_NumJoysticks, _SDL_JoystickName, _SDL_JoystickOpen, _SDL_JoystickOpened, _SDL_JoystickNumAxes, _SDL_JoystickNumButtons, _SDL_JoystickUpdate, _SDL_JoystickEventState, _SDL_JoystickGetAxis, _SDL_JoystickGetButton, _SDL_JoystickClose, _SDL_RWFromConstMem, _SDL_EnableUNICODE, _SDL_AddTimer, _SDL_RemoveTimer, _glutPostRedisplay, _glutGetModifiers, _glutInit, _glutInitWindowSize, _glutInitWindowPosition, _glutIdleFunc, _glutTimerFunc, _glutDisplayFunc, _glutKeyboardFunc, _glutKeyboardUpFunc, _glutSpecialFunc, _glutSpecialUpFunc, _glutReshapeFunc, _glutMotionFunc, _glutPassiveMotionFunc, _glutMouseFunc, _glutSetCursor, _glutCreateWindow, _glutDestroyWindow, _glutReshapeWindow, _glutPositionWindow, _glutFullScreen, _glutInitDisplayMode, _glutSwapBuffers, _glutMainLoop, _eglGetDisplay, _eglInitialize, _eglTerminate, _eglGetConfigs, _eglChooseConfig, _eglGetConfigAttrib, _eglCreateWindowSurface, _eglDestroySurface, _eglCreateContext, _eglDestroyContext, _eglQuerySurface, _eglQueryContext, _eglGetError, _eglQueryString, _eglBindAPI, _eglQueryAPI, _eglWaitClient, _eglWaitNative, _eglSwapInterval, _eglMakeCurrent, _eglGetCurrentContext, _eglGetCurrentSurface, _eglGetCurrentDisplay, _eglSwapBuffers, _eglReleaseThread, _godot_webxr_is_supported, _godot_webxr_is_session_supported, _godot_webxr_initialize, _godot_webxr_uninitialize, _godot_webxr_get_view_count, _godot_webxr_get_render_target_size, _godot_webxr_get_transform_for_view, _godot_webxr_get_projection_for_view, _godot_webxr_get_color_texture, _godot_webxr_get_depth_texture, _godot_webxr_get_velocity_texture, _godot_webxr_update_input_source, _godot_webxr_get_visibility_state, _godot_webxr_get_bounds_geometry, _godot_audio_is_available, _godot_audio_input_start, _godot_audio_input_stop, _godot_webgl2_glFramebufferTextureMultiviewOVR ];
+var proxiedFunctionTable = [ null, _proc_exit, exitOnMainThread, pthreadCreateProxied, ___syscall__newselect, ___syscall_accept4, ___syscall_bind, ___syscall_chdir, ___syscall_chmod, ___syscall_connect, ___syscall_dup, ___syscall_dup3, ___syscall_faccessat, ___syscall_fallocate, ___syscall_fchdir, ___syscall_fchmod, ___syscall_fchmodat, ___syscall_fchown32, ___syscall_fchownat, ___syscall_fcntl64, ___syscall_fdatasync, ___syscall_fstat64, ___syscall_fstatfs64, ___syscall_statfs64, ___syscall_ftruncate64, ___syscall_getcwd, ___syscall_getdents64, ___syscall_getpeername, ___syscall_getsockname, ___syscall_getsockopt, ___syscall_ioctl, ___syscall_listen, ___syscall_lstat64, ___syscall_mkdirat, ___syscall_mknodat, ___syscall_newfstatat, ___syscall_openat, ___syscall_pipe, ___syscall_poll, ___syscall_readlinkat, ___syscall_recvfrom, ___syscall_recvmsg, ___syscall_renameat, ___syscall_rmdir, ___syscall_sendmsg, ___syscall_sendto, ___syscall_socket, ___syscall_stat64, ___syscall_symlink, ___syscall_symlinkat, ___syscall_truncate64, ___syscall_unlinkat, ___syscall_utimensat, __mmap_js, __msync_js, __munmap_js, _tzset_impl, _alBuffer3f, _alBuffer3i, _alBufferData, _alBufferf, _alBufferfv, _alBufferi, _alBufferiv, _alDeleteBuffers, _alDeleteSources, _alSourcei, _alDisable, _alDistanceModel, _alDopplerFactor, _alDopplerVelocity, _alEnable, _alGenBuffers, _alGenSources, _alGetBoolean, _alGetBooleanv, _alGetBuffer3f, _alGetBuffer3i, _alGetBufferf, _alGetBufferfv, _alGetBufferi, _alGetBufferiv, _alGetDouble, _alGetDoublev, _alGetEnumValue, _alGetError, _alGetFloat, _alGetFloatv, _alGetInteger, _alGetIntegerv, _alGetListener3f, _alGetListener3i, _alGetListenerf, _alGetListenerfv, _alGetListeneri, _alGetListeneriv, _alGetSource3f, _alGetSource3i, _alGetSourcef, _alGetSourcefv, _alGetSourcei, _alGetSourceiv, _alGetString, _alIsBuffer, _alIsEnabled, _alIsExtensionPresent, _alIsSource, _alListener3f, _alListener3i, _alListenerf, _alListenerfv, _alListeneri, _alListeneriv, _alSource3f, _alSource3i, _alSourcePause, _alSourcePausev, _alSourcePlay, _alSourcePlayv, _alSourceQueueBuffers, _alSourceRewind, _alSourceRewindv, _alSourceStop, _alSourceStopv, _alSourceUnqueueBuffers, _alSourcef, _alSourcefv, _alSourceiv, _alSpeedOfSound, _alcCaptureCloseDevice, _alcCaptureOpenDevice, _alcCaptureSamples, _alcCaptureStart, _alcCaptureStop, _alcCloseDevice, _alcCreateContext, _alcDestroyContext, _alcGetContextsDevice, _alcGetCurrentContext, _alcGetEnumValue, _alcGetError, _alcGetIntegerv, _alcGetString, _alcIsExtensionPresent, _alcMakeContextCurrent, _alcOpenDevice, _emscripten_alcDevicePauseSOFT, _emscripten_alcDeviceResumeSOFT, _emscripten_alcGetStringiSOFT, _emscripten_alcResetDeviceSOFT, _emscripten_webgl_create_context_proxied, _environ_get, _environ_sizes_get, _fd_close, _fd_fdstat_get, _fd_pread, _fd_pwrite, _fd_read, _fd_seek, _fd_sync, _fd_write, _gethostbyaddr, _gethostbyname, _gethostbyname_r, _getaddrinfo, _emscripten_force_exit, ___syscall_rename, _emscripten_set_keypress_callback_on_thread, _emscripten_set_keydown_callback_on_thread, _emscripten_set_keyup_callback_on_thread, _emscripten_set_click_callback_on_thread, _emscripten_set_mousedown_callback_on_thread, _emscripten_set_mouseup_callback_on_thread, _emscripten_set_dblclick_callback_on_thread, _emscripten_set_mousemove_callback_on_thread, _emscripten_set_mouseenter_callback_on_thread, _emscripten_set_mouseleave_callback_on_thread, _emscripten_set_mouseover_callback_on_thread, _emscripten_set_mouseout_callback_on_thread, _emscripten_get_mouse_status, _emscripten_set_wheel_callback_on_thread, _emscripten_set_resize_callback_on_thread, _emscripten_set_scroll_callback_on_thread, _emscripten_set_blur_callback_on_thread, _emscripten_set_focus_callback_on_thread, _emscripten_set_focusin_callback_on_thread, _emscripten_set_focusout_callback_on_thread, _emscripten_set_deviceorientation_callback_on_thread, _emscripten_get_deviceorientation_status, _emscripten_set_devicemotion_callback_on_thread, _emscripten_get_devicemotion_status, _emscripten_set_orientationchange_callback_on_thread, _emscripten_get_orientation_status, _emscripten_lock_orientation, _emscripten_unlock_orientation, _emscripten_set_fullscreenchange_callback_on_thread, _emscripten_get_fullscreen_status, _emscripten_get_canvas_element_size_main_thread, _emscripten_set_canvas_element_size_main_thread, _emscripten_request_fullscreen, _emscripten_request_fullscreen_strategy, _emscripten_enter_soft_fullscreen, _emscripten_exit_soft_fullscreen, _emscripten_exit_fullscreen, _emscripten_set_pointerlockchange_callback_on_thread, _emscripten_set_pointerlockerror_callback_on_thread, _emscripten_get_pointerlock_status, _emscripten_request_pointerlock, _emscripten_exit_pointerlock, _emscripten_vibrate, _emscripten_vibrate_pattern, _emscripten_set_visibilitychange_callback_on_thread, _emscripten_get_visibility_status, _emscripten_set_touchstart_callback_on_thread, _emscripten_set_touchend_callback_on_thread, _emscripten_set_touchmove_callback_on_thread, _emscripten_set_touchcancel_callback_on_thread, _emscripten_set_gamepadconnected_callback_on_thread, _emscripten_set_gamepaddisconnected_callback_on_thread, _emscripten_sample_gamepad_data, _emscripten_get_num_gamepads, _emscripten_get_gamepad_status, _emscripten_set_beforeunload_callback_on_thread, _emscripten_set_batterychargingchange_callback_on_thread, _emscripten_set_batterylevelchange_callback_on_thread, _emscripten_get_battery_status, _emscripten_set_element_css_size, _emscripten_get_element_css_size, _emscripten_get_device_pixel_ratio, _clock_time_get, _clock_res_get, _emscripten_run_preload_plugins, _emscripten_run_preload_plugins_data, _emscripten_get_window_title, _emscripten_set_window_title, _emscripten_get_screen_size, _emscripten_hide_mouse, _emscripten_set_canvas_size, _emscripten_get_canvas_size, _emscripten_create_worker, _emscripten_destroy_worker, _emscripten_call_worker, _emscripten_get_worker_queue_size, _emscripten_get_preloaded_image_data, _emscripten_get_preloaded_image_data_from_FILE, _emscripten_async_wget, _emscripten_async_wget_data, _emscripten_async_wget2, _emscripten_async_wget2_data, _emscripten_async_wget2_abort, _emscripten_webgl_get_drawing_buffer_size, _emscripten_webgl_get_context_attributes, _emscripten_webgl_destroy_context, _emscripten_webgl_enable_extension, _emscripten_set_webglcontextlost_callback_on_thread, _emscripten_set_webglcontextrestored_callback_on_thread, _emscripten_is_webgl_context_lost, _emscripten_webgl_get_supported_extensions, _emscripten_webgl_get_program_parameter_d, _emscripten_webgl_get_program_info_log_utf8, _emscripten_webgl_get_shader_parameter_d, _emscripten_webgl_get_shader_info_log_utf8, _emscripten_webgl_get_shader_source_utf8, _emscripten_webgl_get_vertex_attrib_d, _emscripten_webgl_get_vertex_attrib_o, _emscripten_webgl_get_vertex_attrib_v, _emscripten_webgl_get_uniform_d, _emscripten_webgl_get_uniform_v, _emscripten_webgl_get_parameter_v, _emscripten_webgl_get_parameter_d, _emscripten_webgl_get_parameter_o, _emscripten_webgl_get_parameter_utf8, _emscripten_webgl_get_parameter_i64v, _SDL_GetTicks, _SDL_LockSurface, _SDL_Linked_Version, _SDL_Init, _SDL_WasInit, _SDL_GetVideoInfo, _SDL_VideoDriverName, _SDL_SetVideoMode, _SDL_GetVideoSurface, _SDL_AudioQuit, _SDL_UnlockSurface, _SDL_WM_SetCaption, _SDL_GetKeyboardState, _SDL_GetKeyName, _SDL_GetModState, _SDL_GetMouseState, _SDL_WarpMouse, _SDL_ShowCursor, _SDL_GetError, _SDL_CreateRGBSurface, _SDL_CreateRGBSurfaceFrom, _SDL_ConvertSurface, _SDL_FreeSurface, _SDL_UpperBlit, _SDL_UpperBlitScaled, _SDL_GetClipRect, _SDL_SetClipRect, _SDL_FillRect, _SDL_BlitSurface, _SDL_BlitScaled, _SDL_SetAlpha, _SDL_PollEvent, _SDL_PushEvent, _SDL_PeepEvents, _SDL_PumpEvents, _emscripten_SDL_SetEventHandler, _SDL_SetColors, _SDL_MapRGB, _SDL_MapRGBA, _SDL_GetRGB, _SDL_GetRGBA, _SDL_GetAppState, _SDL_WM_ToggleFullScreen, _IMG_Load_RW, _SDL_FreeRW, _IMG_Load, _SDL_RWFromFile, _SDL_OpenAudio, _SDL_PauseAudio, _SDL_CloseAudio, _SDL_StartTextInput, _SDL_StopTextInput, _Mix_OpenAudio, _Mix_AllocateChannels, _Mix_ChannelFinished, _Mix_Volume, _Mix_SetPanning, _Mix_LoadWAV_RW, _Mix_LoadWAV, _Mix_QuickLoad_RAW, _Mix_FreeChunk, _Mix_ReserveChannels, _Mix_PlayChannel, _Mix_HaltChannel, _Mix_HookMusicFinished, _Mix_HaltMusic, _Mix_VolumeMusic, _Mix_LoadMUS, _Mix_PlayMusic, _Mix_PauseMusic, _Mix_ResumeMusic, _Mix_PlayingMusic, _Mix_Playing, _Mix_Pause, _Mix_Paused, _Mix_PausedMusic, _Mix_Resume, _TTF_Init, _TTF_OpenFont, _TTF_CloseFont, _TTF_RenderText_Solid, _TTF_SizeText, _TTF_GlyphMetrics, _TTF_FontAscent, _TTF_FontDescent, _TTF_FontHeight, _SDL_GL_SetAttribute, _SDL_GL_GetAttribute, _SDL_GL_SwapBuffers, _SDL_GL_ExtensionSupported, _SDL_GetWindowFlags, _SDL_GL_GetSwapInterval, _SDL_SetWindowTitle, _SDL_GetWindowSize, _SDL_SetWindowFullscreen, _SDL_NumJoysticks, _SDL_JoystickName, _SDL_JoystickOpen, _SDL_JoystickOpened, _SDL_JoystickNumAxes, _SDL_JoystickNumButtons, _SDL_JoystickUpdate, _SDL_JoystickEventState, _SDL_JoystickGetAxis, _SDL_JoystickGetButton, _SDL_JoystickClose, _SDL_RWFromConstMem, _SDL_EnableUNICODE, _SDL_AddTimer, _SDL_RemoveTimer, _glutPostRedisplay, _glutGetModifiers, _glutInit, _glutInitWindowSize, _glutInitWindowPosition, _glutIdleFunc, _glutTimerFunc, _glutDisplayFunc, _glutKeyboardFunc, _glutKeyboardUpFunc, _glutSpecialFunc, _glutSpecialUpFunc, _glutReshapeFunc, _glutMotionFunc, _glutPassiveMotionFunc, _glutMouseFunc, _glutSetCursor, _glutCreateWindow, _glutDestroyWindow, _glutReshapeWindow, _glutPositionWindow, _glutFullScreen, _glutInitDisplayMode, _glutSwapBuffers, _glutMainLoop, _eglGetDisplay, _eglInitialize, _eglTerminate, _eglGetConfigs, _eglChooseConfig, _eglGetConfigAttrib, _eglCreateWindowSurface, _eglDestroySurface, _eglCreateContext, _eglDestroyContext, _eglQuerySurface, _eglQueryContext, _eglGetError, _eglQueryString, _eglBindAPI, _eglQueryAPI, _eglWaitClient, _eglWaitNative, _eglSwapInterval, _eglMakeCurrent, _eglGetCurrentContext, _eglGetCurrentSurface, _eglGetCurrentDisplay, _eglSwapBuffers, _eglReleaseThread, _godot_webxr_is_supported, _godot_webxr_is_session_supported, _godot_webxr_initialize, _godot_webxr_uninitialize, _godot_webxr_get_view_count, _godot_webxr_get_render_target_size, _godot_webxr_get_transform_for_view, _godot_webxr_get_projection_for_view, _godot_webxr_get_color_texture, _godot_webxr_get_depth_texture, _godot_webxr_get_velocity_texture, _godot_webxr_update_input_source, _godot_webxr_get_visibility_state, _godot_webxr_get_bounds_geometry, _godot_webxr_get_frame_rate, _godot_webxr_update_target_frame_rate, _godot_webxr_get_supported_frame_rates, _godot_audio_is_available, _godot_audio_input_start, _godot_audio_input_stop, _godot_webgl2_glFramebufferTextureMultiviewOVR ];
 
 var ASSERTIONS = true;
 
