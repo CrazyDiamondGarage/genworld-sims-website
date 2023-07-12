@@ -112,13 +112,6 @@ const App = () => {
       <br />
 
       <div id="game-view">
-        <iframe
-          id="godot-game"
-          className={`${playing ? "" : "gw-hide"} game-window`}
-          title="GenWorld"
-          src="/game/game.html"
-        />
-
         <img className={`${playing ? "gw-hide" : ""} game-window`} src="/img/screenshot_01.png" />
         <button id="gw-btn-start-game" className={playing ? "gw-hide" : ""} onClick={playGame} disabled={playing}>
           RUN
@@ -222,4 +215,8 @@ const App = () => {
   );
 };
 
-export default App;
+const App2 = () => {
+  return <div>App2</div>;
+};
+
+export default App2;
