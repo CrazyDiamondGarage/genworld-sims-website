@@ -158,7 +158,7 @@ const App = () => {
         </p>
         <p>
           <a href="https://twitter.com/_endaye" rel="noreferrer" target="_blank">
-            Todd Zhang
+            Todd Zha
           </a>{" "}
           - Game Developer
         </p>
